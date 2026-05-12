@@ -129,7 +129,7 @@ export class ClaudeMcpSettingTab extends PluginSettingTab {
     const cfg = containerEl.createEl("div");
     cfg.createEl("h3", { text: "Claude Code MCP config snippet" });
     cfg.createEl("p", {
-      text: "Paste this into ~/.claude/settings.json under the top-level mcpServers key. Restart Claude Code after saving.",
+      text: "Paste this into ~/.claude.json under the top-level mcpServers key. Restart Claude Code after saving.",
       cls: "setting-item-description",
     });
 

@@ -70,7 +70,7 @@ Settings tab prints a ready-to-paste snippet. It looks like:
 }
 ```
 
-Add it to `~/.claude/settings.json` (or your project's `.claude/settings.json`) under `mcpServers`. Restart Claude Code.
+Add it to `~/.claude.json` under `mcpServers`. Restart Claude Code.
 
 ## Settings
 
