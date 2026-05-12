@@ -1,13 +1,27 @@
 #!/usr/bin/env bash
 # Smoke-test the running plugin: initialize, list tools, call list_folders.
-# Run after enabling the plugin in Obsidian.
+# Run after enabling the plugin in Obsidian (so it has generated a bearer token).
 #
-# Usage: ./scripts/smoke.sh
-#        VAULT=/path/to/vault PORT=27125 ./scripts/smoke.sh
+# Usage: VAULT=/path/to/vault ./scripts/smoke.sh
+#        VAULT=/path/to/vault PORT=27125 HOST=127.0.0.1 ./scripts/smoke.sh
+#
+# If VAULT is unset, the script tries to read your first vault from Obsidian's
+# registry at ~/Library/Application Support/obsidian/obsidian.json (macOS).
 
 set -euo pipefail
 
-VAULT="${VAULT:-/Users/bdwalter/Desktop/bwdata/Obsidian/bdwalter}"
+if [[ -z "${VAULT:-}" ]]; then
+  REG="$HOME/Library/Application Support/obsidian/obsidian.json"
+  if [[ -f "$REG" ]]; then
+    VAULT=$(python3 -c "import json; v=json.load(open('$REG'))['vaults']; print(next(iter(v.values()))['path'])" 2>/dev/null || true)
+  fi
+fi
+
+if [[ -z "${VAULT:-}" ]]; then
+  echo "VAULT is not set and could not be inferred. Try: VAULT=/path/to/your/vault $0" >&2
+  exit 1
+fi
+
 PORT="${PORT:-27125}"
 HOST="${HOST:-127.0.0.1}"
 DATA_FILE="$VAULT/.obsidian/plugins/obsidian-claude-mcp/data.json"

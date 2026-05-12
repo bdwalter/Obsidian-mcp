@@ -5,6 +5,6 @@
   "minAppVersion": "1.4.0",
   "description": "Exposes the vault to Claude (and any MCP client) as a local MCP server over Streamable HTTP.",
   "author": "Brian Walter",
-  "authorUrl": "",
+  "authorUrl": "https://github.com/bdwalter",
   "isDesktopOnly": true
 }

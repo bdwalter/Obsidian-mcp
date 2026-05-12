@@ -35,12 +35,14 @@ npm install
 npm run dev
 ```
 
-Symlink the build output into your vault:
+Symlink the build output into your vault (set `VAULT` to the absolute path of your vault first):
 
 ```bash
-mkdir -p "/Users/bdwalter/Desktop/bwdata/Obsidian/bdwalter/.obsidian/plugins/obsidian-claude-mcp"
-ln -sf "$PWD/main.js"      "/Users/bdwalter/Desktop/bwdata/Obsidian/bdwalter/.obsidian/plugins/obsidian-claude-mcp/main.js"
-ln -sf "$PWD/manifest.json" "/Users/bdwalter/Desktop/bwdata/Obsidian/bdwalter/.obsidian/plugins/obsidian-claude-mcp/manifest.json"
+export VAULT="/path/to/your/vault"
+PLUG="$VAULT/.obsidian/plugins/obsidian-claude-mcp"
+mkdir -p "$PLUG"
+ln -sf "$PWD/main.js"       "$PLUG/main.js"
+ln -sf "$PWD/manifest.json" "$PLUG/manifest.json"
 ```
 
 Reload Obsidian, enable the plugin in Settings → Community plugins, then open the plugin's settings tab. A bearer token is generated on first load.
@@ -62,6 +64,16 @@ Settings tab prints a ready-to-paste snippet. It looks like:
 ```
 
 Add it to `~/.claude/settings.json` (or your project's `.claude/settings.json`) under `mcpServers`. Restart Claude Code.
+
+## Smoke test
+
+After enabling the plugin once (so it generates a bearer token), verify the server end-to-end without going through Claude:
+
+```bash
+VAULT="/path/to/your/vault" ./scripts/smoke.sh
+```
+
+The script runs the MCP `initialize` handshake, lists tools, and calls `list_folders` + `list_notes` against the live server.
 
 ## Safety
 
