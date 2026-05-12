@@ -12,8 +12,9 @@ Early — v0.1.0. Tools are usable; the marketplace submission is pending.
 
 | Tool | Purpose |
 | --- | --- |
-| `search_vault` | Substring / tag / frontmatter search with optional folder scope. |
-| `list_notes` | List notes sorted by mtime/ctime/path. Stale-note discovery. |
+| `search_vault` | Compose filters: body query, filename, tag, frontmatter key/value, folder. Paginated. |
+| `list_notes` | List notes by mtime/ctime/path with `recursive`, `offset`, `limit`. Stale-note discovery. |
+| `list_folders` | List folders under a path with note/subfolder counts. |
 | `get_metadata_keys` | Frontmatter keys used across the vault, with usage counts. |
 | `read_note` | Read body + parsed frontmatter + tags + mtime. |
 | `get_daily_note` | Daily note for `today`/`yesterday`/`tomorrow`/`±Nd`/`±Nw`/ISO date. |
