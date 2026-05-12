@@ -15,11 +15,11 @@
   "devDependencies": {
     "@types/node": "^20.11.0",
     "builtin-modules": "^3.3.0",
-    "esbuild": "^0.20.2",
+    "esbuild": "^0.28.0",
     "obsidian": "latest",
     "tslib": "^2.6.2",
     "typescript": "^5.4.5",
-    "vitest": "^1.6.0"
+    "vitest": "^4.1.6"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",
