@@ -58,7 +58,8 @@ export class ObsidianMcpServer {
     }
 
     console.log(
-      `[claude-mcp] listening on http://${this.settings.bindHost}:${this.settings.port}/mcp`,
+      `[claude-mcp] listening on http://${this.settings.bindHost}:${this.settings.port}/mcp` +
+        (this.settings.readOnly ? " (read-only)" : ""),
     );
   }
 

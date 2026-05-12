@@ -14,6 +14,8 @@ export interface ToolContext {
 export function registerAllTools(mcp: McpServer, ctx: ToolContext): void {
   registerSearchTools(mcp, ctx);
   registerReadTools(mcp, ctx);
-  registerWriteTools(mcp, ctx);
   registerLinkTools(mcp, ctx);
+  if (!ctx.settings.readOnly) {
+    registerWriteTools(mcp, ctx);
+  }
 }

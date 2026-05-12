@@ -7,6 +7,7 @@ export interface ClaudeMcpSettings {
   bearerToken: string;
   bindHost: string;
   trashOnWrite: boolean;
+  readOnly: boolean;
 }
 
 export const DEFAULT_SETTINGS: ClaudeMcpSettings = {
@@ -14,6 +15,7 @@ export const DEFAULT_SETTINGS: ClaudeMcpSettings = {
   bearerToken: "",
   bindHost: "127.0.0.1",
   trashOnWrite: true,
+  readOnly: false,
 };
 
 export function generateToken(): string {
@@ -90,8 +92,22 @@ export class ClaudeMcpSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
+      .setName("Read-only mode")
+      .setDesc("When on, the server only registers read tools — write/delete/restore tools are not exposed. Server auto-restarts ~1.5s after toggling. Useful for safer dogfooding or when sharing the bearer token with less-trusted clients.")
+      .addToggle((t) =>
+        t
+          .setValue(this.plugin.settings.readOnly)
+          .onChange(async (v) => {
+            if (v === this.plugin.settings.readOnly) return;
+            this.plugin.settings.readOnly = v;
+            await this.plugin.saveSettings();
+            this.plugin.scheduleRestart(v ? "read-only enabled" : "read-only disabled");
+          }),
+      );
+
+    new Setting(containerEl)
       .setName("Backup on overwrite")
-      .setDesc("Copy prior contents into .trash/ before update_note overwrites.")
+      .setDesc("Copy prior contents into .trash/ before update_note overwrites. Only relevant when read-only mode is off.")
       .addToggle((t) =>
         t
           .setValue(this.plugin.settings.trashOnWrite)

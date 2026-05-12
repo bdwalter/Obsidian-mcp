@@ -77,7 +77,8 @@ Add it to `~/.claude.json` under `mcpServers`. Restart Claude Code.
 - **Bind host** (`127.0.0.1`) — Loopback only by default. Changing this triggers an auto-restart of the server after ~1.5s of inactivity.
 - **Port** (`27125`) — HTTP port. Same auto-restart behavior.
 - **Bearer token** — Required on every request. Rotate at any time; rotation takes effect immediately (no restart needed). Copy or regenerate from settings.
-- **Backup on overwrite** (default `on`) — Before any `update_note` / `append_to_note` / `prepend_to_note`, prior contents are copied to `.trash/<iso-ts>__<path>.md` so you can roll back with `restore_note`.
+- **Read-only mode** (default `off`) — When on, the server only registers read/search/link tools — `create_note`, `update_note`, `append_to_note`, `prepend_to_note`, `delete_note`, and `restore_note` are not registered at all (and don't appear in `tools/list`). Toggle triggers an auto-restart. Useful for safer dogfooding, sharing the bearer token with less-trusted clients, or protecting a reference vault you never want a model to modify.
+- **Backup on overwrite** (default `on`, only relevant when read-only is off) — Before any `update_note` / `append_to_note` / `prepend_to_note`, prior contents are copied to `.trash/<iso-ts>__<path>.md` so you can roll back with `restore_note`.
 
 ## Smoke test
 
