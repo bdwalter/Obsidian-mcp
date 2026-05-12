@@ -44,7 +44,7 @@ echo
 
 call() {
   local body=$1
-  local extra_headers=("${@:2}")
+  shift
   local args=(
     -sS -i
     -X POST "$URL"
@@ -52,7 +52,10 @@ call() {
     -H "Content-Type: application/json"
     -H "Accept: application/json, text/event-stream"
   )
-  for h in "${extra_headers[@]}"; do args+=(-H "$h"); done
+  while (($#)); do
+    args+=(-H "$1")
+    shift
+  done
   curl "${args[@]}" -d "$body"
 }
 
@@ -71,16 +74,24 @@ echo
 echo "=== notifications/initialized ==="
 call '{"jsonrpc":"2.0","method":"notifications/initialized","params":{}}' "mcp-session-id: $SESSION" >/dev/null
 
+render() {
+  # Strip HTTP headers, then pull `data:` payloads out of SSE and pretty-print.
+  awk 'BEGIN{h=1} /^\r?$/ {h=0; next} h==0 {print}' \
+    | awk '/^data: /{sub(/^data: /,""); print}' \
+    | python3 -m json.tool 2>/dev/null || true
+}
+
 echo
 echo "=== tools/list ==="
-call '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' "mcp-session-id: $SESSION" | sed -n '/^{/,$p' | python3 -m json.tool 2>/dev/null || true
+call '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' "mcp-session-id: $SESSION" \
+  | render \
+  | python3 -c "import json,sys; d=json.load(sys.stdin); print('\n'.join(f\"  {t['name']:25} {t.get('description','')[:70]}\" for t in d['result']['tools']))" \
+  || true
 
 echo
 echo "=== tools/call list_folders (recursive=false) ==="
-call '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"list_folders","arguments":{"recursive":false}}}' "mcp-session-id: $SESSION" | sed -n '/^{/,$p'
-echo
+call '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"list_folders","arguments":{"recursive":false}}}' "mcp-session-id: $SESSION" | render
 
 echo
 echo "=== tools/call list_notes (limit=3) ==="
-call '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"list_notes","arguments":{"limit":3}}}' "mcp-session-id: $SESSION" | sed -n '/^{/,$p'
-echo
+call '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"list_notes","arguments":{"limit":3}}}' "mcp-session-id: $SESSION" | render
