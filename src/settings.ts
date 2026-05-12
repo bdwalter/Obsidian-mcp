@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, Notice, PluginSettingTab, Setting } from "obsidian";
 import { randomBytes } from "node:crypto";
 import type ClaudeMcpPlugin from "./main";
 
@@ -68,6 +68,15 @@ export class ClaudeMcpSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           }),
       )
+      .addExtraButton((b) =>
+        b
+          .setIcon("copy")
+          .setTooltip("Copy token")
+          .onClick(async () => {
+            await navigator.clipboard.writeText(this.plugin.settings.bearerToken);
+            new Notice("Token copied");
+          }),
+      )
       .addButton((b) =>
         b.setButtonText("Generate").onClick(async () => {
           this.plugin.settings.bearerToken = generateToken();
@@ -97,25 +106,47 @@ export class ClaudeMcpSettingTab extends PluginSettingTab {
         }),
       );
 
-    const cfg = containerEl.createEl("div");
-    cfg.createEl("h3", { text: "Claude Code MCP config snippet" });
-    const pre = cfg.createEl("pre");
-    pre.setText(
-      JSON.stringify(
-        {
-          mcpServers: {
-            obsidian: {
-              type: "http",
-              url: `http://${this.plugin.settings.bindHost}:${this.plugin.settings.port}/mcp`,
-              headers: {
-                Authorization: `Bearer ${this.plugin.settings.bearerToken || "<set a token above>"}`,
-              },
+    const snippet = JSON.stringify(
+      {
+        mcpServers: {
+          obsidian: {
+            type: "http",
+            url: `http://${this.plugin.settings.bindHost}:${this.plugin.settings.port}/mcp`,
+            headers: {
+              Authorization: `Bearer ${this.plugin.settings.bearerToken || "<set a token above>"}`,
             },
           },
         },
-        null,
-        2,
-      ),
+      },
+      null,
+      2,
     );
+
+    const cfg = containerEl.createEl("div");
+    cfg.createEl("h3", { text: "Claude Code MCP config snippet" });
+    cfg.createEl("p", {
+      text: "Paste this into ~/.claude/settings.json under the top-level mcpServers key. Restart Claude Code after saving.",
+      cls: "setting-item-description",
+    });
+
+    const pre = cfg.createEl("pre");
+    pre.setAttr(
+      "style",
+      "user-select: text; white-space: pre-wrap; padding: 12px; background: var(--background-secondary); border-radius: 6px; font-family: var(--font-monospace); font-size: 12px;",
+    );
+    pre.setText(snippet);
+
+    new Setting(cfg)
+      .setName("Copy snippet")
+      .setDesc("Copies the JSON above to the clipboard.")
+      .addButton((b) =>
+        b
+          .setButtonText("Copy")
+          .setCta()
+          .onClick(async () => {
+            await navigator.clipboard.writeText(snippet);
+            new Notice("MCP config copied to clipboard");
+          }),
+      );
   }
 }
