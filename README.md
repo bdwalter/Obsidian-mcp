@@ -14,11 +14,14 @@ Early — v0.1.0. Tools are usable; the marketplace submission is pending.
 | --- | --- |
 | `search_vault` | Substring / tag / frontmatter search with optional folder scope. |
 | `list_notes` | List notes sorted by mtime/ctime/path. Stale-note discovery. |
+| `get_metadata_keys` | Frontmatter keys used across the vault, with usage counts. |
 | `read_note` | Read body + parsed frontmatter + tags + mtime. |
-| `get_daily_note` | Return today's (or a given date's) daily note. |
+| `get_daily_note` | Daily note for `today`/`yesterday`/`tomorrow`/`±Nd`/`±Nw`/ISO date. |
 | `create_note` | Create a new note. Fails on existing path. |
-| `update_note` | Overwrite a note. Backs prior contents into `.trash/<ts>__<name>.md`. |
+| `update_note` | Overwrite a note. Backs prior contents into `.trash/`. |
 | `append_to_note` | Append text, optionally under a specific heading. |
+| `prepend_to_note` | Prepend text (after frontmatter if present). Backs up first. |
+| `delete_note` | Move a note to `.trash/` (recoverable inside Obsidian). |
 | `list_backlinks` | Resolved backlinks for a note. |
 | `get_unresolved_links` | Wikilinks that don't yet point at a file. |
 | `find_similar_notes` | Notes sharing tags/frontmatter — cheap heuristic. |

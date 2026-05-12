@@ -59,6 +59,30 @@ export function registerSearchTools(mcp: McpServer, { app }: ToolContext): void 
   );
 
   mcp.tool(
+    "get_metadata_keys",
+    "List frontmatter keys used across the vault with usage counts. Optionally restrict to a folder.",
+    {
+      folder: z.string().optional(),
+    },
+    async ({ folder }) => {
+      const files = app.vault.getMarkdownFiles().filter((f) => !folder || f.path.startsWith(folder));
+      const counts = new Map<string, number>();
+      for (const f of files) {
+        const fm = app.metadataCache.getFileCache(f)?.frontmatter;
+        if (!fm) continue;
+        for (const k of Object.keys(fm)) {
+          if (k === "position") continue;
+          counts.set(k, (counts.get(k) ?? 0) + 1);
+        }
+      }
+      const items = [...counts.entries()]
+        .map(([key, count]) => ({ key, count }))
+        .sort((a, b) => b.count - a.count);
+      return textResult(JSON.stringify({ scanned: files.length, count: items.length, items }, null, 2));
+    },
+  );
+
+  mcp.tool(
     "list_notes",
     "List notes with optional folder filter and sort by mtime. Useful for stale-note discovery.",
     {

@@ -5,6 +5,37 @@ import type { ToolContext } from "./registry";
 
 const textResult = (text: string) => ({ content: [{ type: "text" as const, text }] });
 
+function resolveDate(input: string | undefined): string {
+  const now = new Date();
+  const isoToday = () => {
+    const d = new Date(now);
+    return d.toISOString().slice(0, 10);
+  };
+  if (!input) return isoToday();
+  const lower = input.toLowerCase().trim();
+  if (lower === "today") return isoToday();
+  if (lower === "yesterday") {
+    const d = new Date(now);
+    d.setUTCDate(d.getUTCDate() - 1);
+    return d.toISOString().slice(0, 10);
+  }
+  if (lower === "tomorrow") {
+    const d = new Date(now);
+    d.setUTCDate(d.getUTCDate() + 1);
+    return d.toISOString().slice(0, 10);
+  }
+  const rel = lower.match(/^([+-])(\d+)([dw])$/);
+  if (rel) {
+    const sign = rel[1] === "-" ? -1 : 1;
+    const n = parseInt(rel[2], 10) * (rel[3] === "w" ? 7 : 1);
+    const d = new Date(now);
+    d.setUTCDate(d.getUTCDate() + sign * n);
+    return d.toISOString().slice(0, 10);
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(input)) return input;
+  return isoToday();
+}
+
 export function registerReadTools(mcp: McpServer, { app }: ToolContext): void {
   mcp.tool(
     "read_note",
@@ -35,16 +66,15 @@ export function registerReadTools(mcp: McpServer, { app }: ToolContext): void {
 
   mcp.tool(
     "get_daily_note",
-    "Get today's daily note (or another date). Looks in the configured Daily Notes folder if the core/community plugin is enabled, else falls back to 'Daily/YYYY-MM-DD.md'.",
+    "Get the daily note for a given date. Accepts ISO (YYYY-MM-DD), 'today', 'yesterday', 'tomorrow', or relative offsets like '+1d', '-7d', '+2w'.",
     {
       date: z
         .string()
-        .regex(/^\d{4}-\d{2}-\d{2}$/)
         .optional()
-        .describe("ISO date YYYY-MM-DD. Defaults to today."),
+        .describe("ISO date, keyword (today|yesterday|tomorrow), or relative offset (e.g. -7d, +2w). Defaults to today."),
     },
     async ({ date }) => {
-      const target = date ?? new Date().toISOString().slice(0, 10);
+      const target = resolveDate(date);
       const candidates = [
         `${target}.md`,
         `Daily/${target}.md`,

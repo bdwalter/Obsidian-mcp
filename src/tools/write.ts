@@ -51,6 +51,54 @@ export function registerWriteTools(mcp: McpServer, { app, settings }: ToolContex
   );
 
   mcp.tool(
+    "prepend_to_note",
+    "Prepend text to an existing note (after frontmatter if present). Backs up prior contents to .trash/ if enabled.",
+    {
+      path: z.string(),
+      content: z.string(),
+    },
+    async ({ path, content }) => {
+      const np = normalizePath(path);
+      const file = app.vault.getAbstractFileByPath(np);
+      if (!(file instanceof TFile)) {
+        return textResult(JSON.stringify({ error: `not found: ${np}` }));
+      }
+      let backup: string | null = null;
+      if (settings.trashOnWrite) backup = await backupToTrash(app, np);
+
+      const cur = await app.vault.read(file);
+      const fmMatch = cur.match(/^---\n[\s\S]*?\n---\n/);
+      let next: string;
+      if (fmMatch) {
+        const head = fmMatch[0];
+        const rest = cur.slice(head.length);
+        next = head + content + (content.endsWith("\n") ? "" : "\n") + rest;
+      } else {
+        next = content + (content.endsWith("\n") ? "" : "\n") + cur;
+      }
+      await app.vault.modify(file, next);
+      return textResult(JSON.stringify({ path: file.path, prepended: true, backup }));
+    },
+  );
+
+  mcp.tool(
+    "delete_note",
+    "Move a note to Obsidian's .trash/ (recoverable). Use Obsidian itself to permanently delete from trash.",
+    {
+      path: z.string(),
+    },
+    async ({ path }) => {
+      const np = normalizePath(path);
+      const file = app.vault.getAbstractFileByPath(np);
+      if (!(file instanceof TFile)) {
+        return textResult(JSON.stringify({ error: `not found: ${np}` }));
+      }
+      await app.vault.trash(file, false);
+      return textResult(JSON.stringify({ path: np, deleted: true, location: ".trash/" }));
+    },
+  );
+
+  mcp.tool(
     "append_to_note",
     "Append text to an existing note (creates a leading newline if missing). Use 'heading' to append under a specific heading.",
     {
