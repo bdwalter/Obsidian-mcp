@@ -32,28 +32,32 @@ export class ClaudeMcpSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Bind host")
-      .setDesc("Interface to listen on. Keep 127.0.0.1 unless you know why you're changing it.")
+      .setDesc("Interface to listen on. Keep 127.0.0.1 unless you know why you're changing it. Server auto-restarts ~1.5s after the last edit.")
       .addText((t) =>
         t
           .setValue(this.plugin.settings.bindHost)
           .onChange(async (v) => {
-            this.plugin.settings.bindHost = v.trim() || "127.0.0.1";
+            const next = v.trim() || "127.0.0.1";
+            if (next === this.plugin.settings.bindHost) return;
+            this.plugin.settings.bindHost = next;
             await this.plugin.saveSettings();
+            this.plugin.scheduleRestart("bind host changed");
           }),
       );
 
     new Setting(containerEl)
       .setName("Port")
-      .setDesc("MCP HTTP server port.")
+      .setDesc("MCP HTTP server port. Server auto-restarts ~1.5s after the last edit.")
       .addText((t) =>
         t
           .setValue(String(this.plugin.settings.port))
           .onChange(async (v) => {
             const n = Number.parseInt(v, 10);
-            if (Number.isFinite(n) && n > 0 && n < 65536) {
-              this.plugin.settings.port = n;
-              await this.plugin.saveSettings();
-            }
+            if (!Number.isFinite(n) || n <= 0 || n >= 65536) return;
+            if (n === this.plugin.settings.port) return;
+            this.plugin.settings.port = n;
+            await this.plugin.saveSettings();
+            this.plugin.scheduleRestart("port changed");
           }),
       );
 

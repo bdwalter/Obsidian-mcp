@@ -1,10 +1,12 @@
 import { createServer, IncomingMessage, ServerResponse, Server as HttpServer } from "node:http";
-import { randomUUID } from "node:crypto";
+import { randomUUID, timingSafeEqual } from "node:crypto";
 import { App, Notice } from "obsidian";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import type { ClaudeMcpSettings } from "./settings";
 import { registerAllTools } from "./tools/registry";
+
+const MAX_BODY_BYTES = 16 * 1024 * 1024;
 
 export class ObsidianMcpServer {
   private http: HttpServer | null = null;
@@ -31,13 +33,29 @@ export class ObsidianMcpServer {
       }
     });
 
-    await new Promise<void>((resolve, reject) => {
-      this.http!.once("error", reject);
-      this.http!.listen(this.settings.port, this.settings.bindHost, () => {
-        this.http!.off("error", reject);
-        resolve();
+    try {
+      await new Promise<void>((resolve, reject) => {
+        this.http!.once("error", reject);
+        this.http!.listen(this.settings.port, this.settings.bindHost, () => {
+          this.http!.off("error", reject);
+          resolve();
+        });
       });
-    });
+    } catch (err) {
+      const e = err as NodeJS.ErrnoException;
+      this.http = null;
+      if (e.code === "EADDRINUSE") {
+        throw new Error(
+          `port ${this.settings.port} is already in use — change it in Claude MCP settings or stop the conflicting process`,
+        );
+      }
+      if (e.code === "EACCES") {
+        throw new Error(
+          `permission denied binding to ${this.settings.bindHost}:${this.settings.port} (ports < 1024 require elevated permissions)`,
+        );
+      }
+      throw err;
+    }
 
     console.log(
       `[claude-mcp] listening on http://${this.settings.bindHost}:${this.settings.port}/mcp`,
@@ -67,8 +85,22 @@ export class ObsidianMcpServer {
       return;
     }
 
+    const origin = req.headers["origin"];
+    if (origin !== undefined && !this.isAllowedOrigin(origin)) {
+      res.writeHead(403, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "forbidden_origin" }));
+      return;
+    }
+
+    const declared = Number.parseInt(String(req.headers["content-length"] ?? "0"), 10);
+    if (Number.isFinite(declared) && declared > MAX_BODY_BYTES) {
+      res.writeHead(413, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "payload_too_large", maxBytes: MAX_BODY_BYTES }));
+      return;
+    }
+
     const auth = req.headers["authorization"];
-    if (auth !== `Bearer ${this.settings.bearerToken}`) {
+    if (!this.authMatches(auth)) {
       res.writeHead(401, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: "unauthorized" }));
       return;
@@ -95,5 +127,24 @@ export class ObsidianMcpServer {
     }
 
     await transport.handleRequest(req, res);
+  }
+
+  private isAllowedOrigin(origin: string): boolean {
+    const { bindHost, port } = this.settings;
+    const allowed = new Set([
+      `http://${bindHost}:${port}`,
+      `http://127.0.0.1:${port}`,
+      `http://localhost:${port}`,
+    ]);
+    return allowed.has(origin);
+  }
+
+  private authMatches(header: string | string[] | undefined): boolean {
+    if (typeof header !== "string") return false;
+    const expected = `Bearer ${this.settings.bearerToken}`;
+    if (header.length !== expected.length) return false;
+    const a = Buffer.from(header);
+    const b = Buffer.from(expected);
+    return timingSafeEqual(a, b);
   }
 }

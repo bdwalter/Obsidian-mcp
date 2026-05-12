@@ -10,6 +10,7 @@ import { ObsidianMcpServer } from "./server";
 export default class ClaudeMcpPlugin extends Plugin {
   settings: ClaudeMcpSettings = DEFAULT_SETTINGS;
   private server: ObsidianMcpServer | null = null;
+  private restartTimer: number | null = null;
 
   async onload(): Promise<void> {
     await this.loadSettings();
@@ -34,10 +35,22 @@ export default class ClaudeMcpPlugin extends Plugin {
   }
 
   async onunload(): Promise<void> {
+    if (this.restartTimer !== null) {
+      window.clearTimeout(this.restartTimer);
+      this.restartTimer = null;
+    }
     if (this.server) {
       await this.server.stop();
       this.server = null;
     }
+  }
+
+  scheduleRestart(reason: string, delayMs = 1500): void {
+    if (this.restartTimer !== null) window.clearTimeout(this.restartTimer);
+    this.restartTimer = window.setTimeout(() => {
+      this.restartTimer = null;
+      void this.restartServer(reason);
+    }, delayMs);
   }
 
   async loadSettings(): Promise<void> {
@@ -58,10 +71,10 @@ export default class ClaudeMcpPlugin extends Plugin {
     }
   }
 
-  async restartServer(): Promise<void> {
+  async restartServer(reason?: string): Promise<void> {
     if (this.server) await this.server.stop();
     this.server = null;
     await this.startServer();
-    new Notice("Claude MCP: server restarted.");
+    new Notice(reason ? `Claude MCP: restarted (${reason}).` : "Claude MCP: server restarted.");
   }
 }
