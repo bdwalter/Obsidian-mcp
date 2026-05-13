@@ -14,23 +14,61 @@ Early — v0.1.0. All tools are functional; community-plugin marketplace submiss
 
 ## Tools
 
+### Read & search
+
 | Tool | Purpose |
 | --- | --- |
 | `search_vault` | Compose filters: body query, filename, tag, frontmatter key/value, folder. Paginated. |
 | `list_notes` | List notes by mtime/ctime/path with `recursive`, `offset`, `limit`. Stale-note discovery. |
 | `list_folders` | List folders under a path with note/subfolder counts. |
+| `list_tags` | All tags (inline + frontmatter) with usage counts, sorted by count. |
 | `get_metadata_keys` | Frontmatter keys used across the vault, with usage counts. |
-| `read_note` | Read parsed frontmatter, tags (frontmatter + inline), and body (frontmatter block stripped). |
+| `read_note` | Parsed frontmatter, tags (frontmatter + inline), and body (frontmatter block stripped). |
+| `get_note_outline` | Heading hierarchy (level, text, line offset) from metadata cache. |
 | `get_daily_note` | Daily note for `today`/`yesterday`/`tomorrow`/`±Nd`/`±Nw`/ISO date. Honors the core Daily Notes plugin's folder + filename format if enabled. |
+
+### Links
+
+| Tool | Purpose |
+| --- | --- |
+| `list_backlinks` | Resolved backlinks for a note. |
+| `get_unresolved_links` | Wikilinks that don't yet point at a file. |
+| `find_similar_notes` | Notes sharing tags/frontmatter — cheap heuristic. |
+
+### Templates (core Templates plugin integration)
+
+| Tool | Purpose |
+| --- | --- |
+| `list_templates` | List templates from the configured Templates folder. |
+| `get_template` | Read a template's raw markdown (placeholders not expanded). |
+| `apply_template` | Expand `{{date}}` / `{{time}}` / `{{title}}` and create a new note. Templater syntax is left as-is. |
+
+### Write
+
+| Tool | Purpose |
+| --- | --- |
 | `create_note` | Create a new note. Fails on existing path. |
 | `update_note` | Overwrite a note. Backs prior contents into `.trash/`. |
 | `append_to_note` | Append text, optionally under a specific heading. Backs up first. |
 | `prepend_to_note` | Prepend text (after frontmatter if present). Backs up first. |
+| `update_frontmatter` | Surgical `set`/`unset` on YAML frontmatter via Obsidian's `processFrontMatter` (no body rewrite). |
+| `rename_note` | Rename/move; incoming wikilinks are auto-updated via `fileManager.renameFile`. |
 | `delete_note` | Move a note to `.trash/` (recoverable inside Obsidian). |
 | `restore_note` | Restore a file from `.trash/` back into the vault. Infers destination from timestamped backups; takes an explicit `target` for `delete_note` outputs. |
-| `list_backlinks` | Resolved backlinks for a note. |
-| `get_unresolved_links` | Wikilinks that don't yet point at a file. |
-| `find_similar_notes` | Notes sharing tags/frontmatter — cheap heuristic. |
+
+### Admin
+
+| Tool | Purpose |
+| --- | --- |
+| `get_server_info` | Plugin version, vault name, read-only state, tool count, settings flags. |
+| `open_note_in_obsidian` | Focus a note in the active Obsidian window. |
+
+## MCP resources & prompts
+
+In addition to tools, the server exposes:
+
+- **Resources** (`obsidian-note:///<path>`) — notes are addressable as MCP resources; `resources/list` returns the first 500 markdown files. Clients that prefer resource-browsing over tool calls can use this.
+- **Prompts** — `summarize-note`, `extract-action-items`, `find-stale-notes`. Server-provided prompt templates that drive common synthesis workflows; the model calls tools to gather material.
 
 ## Install (dev)
 
@@ -77,7 +115,9 @@ Add it to `~/.claude.json` under `mcpServers`. Restart Claude Code.
 - **Bind host** (`127.0.0.1`) — Loopback only by default. Changing this triggers an auto-restart of the server after ~1.5s of inactivity.
 - **Port** (`27125`) — HTTP port. Same auto-restart behavior.
 - **Bearer token** — Required on every request. Rotate at any time; rotation takes effect immediately (no restart needed). Copy or regenerate from settings.
-- **Read-only mode** (default `off`) — When on, the server only registers read/search/link tools — `create_note`, `update_note`, `append_to_note`, `prepend_to_note`, `delete_note`, and `restore_note` are not registered at all (and don't appear in `tools/list`). Toggle triggers an auto-restart. Useful for safer dogfooding, sharing the bearer token with less-trusted clients, or protecting a reference vault you never want a model to modify.
+- **Read-only mode** (default `off`) — When on, the server only registers read/search/link/template/admin tools — `create_note`, `update_note`, `append_to_note`, `prepend_to_note`, `delete_note`, `restore_note`, `rename_note`, and `update_frontmatter` are not registered at all (and don't appear in `tools/list`). Toggle triggers an auto-restart. Useful for safer dogfooding, sharing the bearer token with less-trusted clients, or protecting a reference vault you never want a model to modify.
+- **Write allow-folders** (default empty) — Comma-separated vault-relative folder prefixes. When non-empty, write tools refuse any path outside these prefixes with a clean structured error. Empty allows writes anywhere. Strictly more flexible than binary read-only mode — pair with read-only as a master switch.
+- **Audit log** (default `off`) + **Audit log path** (default `.claude-mcp-audit.md`) — When enabled, every write-tool call is appended to the configured vault note with timestamp, tool name, args (large content trimmed), and result. Useful for reviewing what Claude has been doing.
 - **Backup on overwrite** (default `on`, only relevant when read-only is off) — Before any `update_note` / `append_to_note` / `prepend_to_note`, prior contents are copied to `.trash/<iso-ts>__<path>.md` so you can roll back with `restore_note`.
 
 ## Smoke test
@@ -89,6 +129,13 @@ VAULT="/path/to/your/vault" ./scripts/smoke.sh
 ```
 
 The script runs the MCP `initialize` handshake, lists tools, and calls `list_folders` + `list_notes` against the live server.
+
+For a no-auth liveness check (handy for monitoring scripts):
+
+```bash
+curl http://127.0.0.1:27125/health
+# → {"status":"ok","plugin":"obsidian-claude-mcp","readOnly":false,"sessions":2}
+```
 
 ## Security model
 

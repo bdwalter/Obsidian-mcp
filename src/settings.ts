@@ -8,6 +8,9 @@ export interface ClaudeMcpSettings {
   bindHost: string;
   trashOnWrite: boolean;
   readOnly: boolean;
+  writeAllowFolders: string[];
+  auditLog: boolean;
+  auditLogPath: string;
 }
 
 export const DEFAULT_SETTINGS: ClaudeMcpSettings = {
@@ -16,6 +19,9 @@ export const DEFAULT_SETTINGS: ClaudeMcpSettings = {
   bindHost: "127.0.0.1",
   trashOnWrite: true,
   readOnly: false,
+  writeAllowFolders: [],
+  auditLog: false,
+  auditLogPath: ".claude-mcp-audit.md",
 };
 
 export function generateToken(): string {
@@ -113,6 +119,47 @@ export class ClaudeMcpSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.trashOnWrite)
           .onChange(async (v) => {
             this.plugin.settings.trashOnWrite = v;
+            await this.plugin.saveSettings();
+          }),
+      );
+
+    new Setting(containerEl)
+      .setName("Write allow-folders")
+      .setDesc("Comma-separated vault-relative folder prefixes. When non-empty, write tools refuse paths outside these prefixes. Leave empty to allow writes anywhere. Example: Inbox, Daily, Journal")
+      .addText((t) =>
+        t
+          .setValue(this.plugin.settings.writeAllowFolders.join(", "))
+          .onChange(async (v) => {
+            const list = v
+              .split(",")
+              .map((s) => s.trim().replace(/^\/|\/$/g, ""))
+              .filter((s) => s.length > 0);
+            this.plugin.settings.writeAllowFolders = list;
+            await this.plugin.saveSettings();
+          }),
+      );
+
+    new Setting(containerEl)
+      .setName("Audit log")
+      .setDesc("Append every tool call to a note in the vault. Useful for reviewing what Claude has been doing.")
+      .addToggle((t) =>
+        t
+          .setValue(this.plugin.settings.auditLog)
+          .onChange(async (v) => {
+            this.plugin.settings.auditLog = v;
+            await this.plugin.saveSettings();
+          }),
+      );
+
+    new Setting(containerEl)
+      .setName("Audit log path")
+      .setDesc("Vault-relative path for the audit log note. Default: .claude-mcp-audit.md")
+      .addText((t) =>
+        t
+          .setValue(this.plugin.settings.auditLogPath)
+          .onChange(async (v) => {
+            const next = v.trim() || ".claude-mcp-audit.md";
+            this.plugin.settings.auditLogPath = next;
             await this.plugin.saveSettings();
           }),
       );

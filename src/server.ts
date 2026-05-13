@@ -5,6 +5,9 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import type { ClaudeMcpSettings } from "./settings";
 import { registerAllTools } from "./tools/registry";
+import { makeAuditLogger } from "./util/audit";
+import { registerResources } from "./resources";
+import { registerPrompts } from "./prompts";
 
 const MAX_BODY_BYTES = 16 * 1024 * 1024;
 
@@ -80,6 +83,17 @@ export class ObsidianMcpServer {
 
   private async handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
+    if (url.pathname === "/health") {
+      const body = {
+        status: "ok",
+        plugin: "obsidian-claude-mcp",
+        readOnly: this.settings.readOnly,
+        sessions: this.transports.size,
+      };
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(body));
+      return;
+    }
     if (url.pathname !== "/mcp") {
       res.writeHead(404, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: "not_found" }));
@@ -112,7 +126,11 @@ export class ObsidianMcpServer {
 
     if (!transport) {
       const mcp = new McpServer({ name: "obsidian-claude-mcp", version: "0.1.0" });
-      registerAllTools(mcp, { app: this.app, settings: this.settings });
+      const audit = makeAuditLogger(this.app, this.settings);
+      const ctx = { app: this.app, settings: this.settings, audit };
+      registerAllTools(mcp, ctx);
+      registerResources(mcp, ctx);
+      registerPrompts(mcp, ctx);
 
       transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),

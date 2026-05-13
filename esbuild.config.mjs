@@ -1,8 +1,10 @@
 import esbuild from "esbuild";
 import process from "node:process";
 import builtins from "builtin-modules";
+import { readFileSync } from "node:fs";
 
 const prod = process.argv[2] === "production";
+const manifest = JSON.parse(readFileSync("manifest.json", "utf8"));
 
 const ctx = await esbuild.context({
   entryPoints: ["src/main.ts"],
@@ -31,6 +33,9 @@ const ctx = await esbuild.context({
   minify: prod,
   outfile: "main.js",
   platform: "node",
+  define: {
+    PLUGIN_VERSION: JSON.stringify(manifest.version),
+  },
 });
 
 if (prod) {
