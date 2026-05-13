@@ -4,12 +4,9 @@ Thanks for your interest in improving Claude MCP for Obsidian. This guide covers
 
 ## Project shape
 
-Two repos, paired but separately deployable:
+This is the Obsidian community plugin that runs the MCP server. Tools are thin wrappers over Obsidian's vault and metadata APIs.
 
-- **`Obsidian-mcp`** (this repo) — the Obsidian community plugin that runs the MCP server. Tools are thin wrappers over Obsidian's vault and metadata APIs.
-- **`Obsidian-skills`** — a Claude Code skills pack that composes the tools here into higher-level workflows. If you have a workflow idea, prefer adding a skill there over a tool here.
-
-The plugin aims to expose **primitives**, not workflows. If you can build something from `read_note + search_vault + create_note`, that's a skill, not a tool.
+The plugin aims to expose **primitives**, not workflows. If you can build something from `read_note + search_vault + create_note`, that belongs in a client-side workflow (a Claude Code skill, a custom prompt, a script), not as a new tool here.
 
 ## Dev setup
 

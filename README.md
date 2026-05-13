@@ -8,8 +8,6 @@
 
 Obsidian community plugin that exposes your vault as a local [Model Context Protocol](https://modelcontextprotocol.io) server over Streamable HTTP. Drop the config snippet into Claude Code (or any MCP client) and Claude can read, search, and write notes through Obsidian's own API — backlinks, frontmatter, tag index, periodic notes, all of it.
 
-Paired skills live at [Obsidian-skills](https://github.com/bdwalter/Obsidian-skills).
-
 ## Status
 
 Early — v0.1.0-beta.1. All tools are functional; community-plugin marketplace submission is pending. Recommended for early users via BRAT.
@@ -159,7 +157,7 @@ The plugin is intended for single-user, local-only access. Everything assumes yo
 What this plugin does *not* protect against:
 - A bearer token leak. Treat it like a password. If you copy it into a config file, that file is now sensitive.
 - Anything running on the same machine as your user, since loopback is accessible. The bearer token is the only barrier.
-- Skills or clients with the token doing damage to the vault — use `restore_note` and the `.trash/` backups to recover.
+- Clients with the token doing damage to the vault — use `restore_note` and the `.trash/` backups to recover.
 
 ## Troubleshooting
 

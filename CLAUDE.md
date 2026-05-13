@@ -6,7 +6,7 @@ This file gives an AI coding assistant the context it needs to make good decisio
 
 Obsidian community plugin that runs an MCP server (Streamable HTTP, loopback) and exposes the vault to Claude (and any MCP client) via tools, resources, and prompts. The plugin process *is* the MCP server — bundled `@modelcontextprotocol/sdk`, single Node HTTP listener on port 27125 by default.
 
-Paired with `~/GitHub/Obsidian-skills` (a separate Claude Code skills pack). Skills compose the plugin's tools into workflows. **Strong bias: if a workflow can be built from existing tools, it belongs in the skills repo, not as a new tool here.**
+**Strong bias: the plugin exposes primitives, not workflows.** If a workflow can be composed from existing tools (read + search + create), it belongs client-side as a Claude Code skill, custom prompt, or script — not as a new tool here. New tools are reserved for capabilities that require direct Obsidian API access (link rewriting, frontmatter parsing, metadata-cache queries).
 
 ## Repo layout (quick reference)
 

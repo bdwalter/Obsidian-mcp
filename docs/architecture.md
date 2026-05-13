@@ -84,14 +84,14 @@ The downside is that auditing is wired per-session — `makeAuditLogger(app, set
 
 The plugin aims to expose **primitives**, not workflows. The dividing line:
 
-- If you can write the operation as a function of `read_note + search_vault + create_note + …`, it's a **skill**, belongs in [`Obsidian-skills`](https://github.com/bdwalter/Obsidian-skills), not here.
-- If it needs to touch Obsidian's API directly (link rewriting, frontmatter parsing, metadata cache), it's a **tool**, belongs here.
+- If you can write the operation as a function of `read_note + search_vault + create_note + …`, it belongs **client-side** — as a Claude Code skill, a custom prompt, or a script — not as a new tool here.
+- If it needs to touch Obsidian's API directly (link rewriting, frontmatter parsing, metadata cache), it's a **tool** and belongs in this plugin.
 
 Concrete examples of the split:
-- "Find all notes with no backlinks" — pure composition over `list_notes` + `list_backlinks` → skill.
-- "Rename a note and update all incoming links" — needs `fileManager.renameFile` → tool (`rename_note`).
-- "Summarize today's daily note" — model + composition → skill (and a server prompt, `summarize-note`).
-- "Modify just the `status` field in a note's frontmatter" — needs `fileManager.processFrontMatter` → tool (`update_frontmatter`).
+- "Find all notes with no backlinks" — pure composition over `list_notes` + `list_backlinks` → client-side workflow.
+- "Rename a note and update all incoming links" — needs `fileManager.renameFile` → plugin tool (`rename_note`).
+- "Summarize today's daily note" — model + composition → client-side workflow (the plugin also ships a server prompt, `summarize-note`, that drives this kind of flow).
+- "Modify just the `status` field in a note's frontmatter" — needs `fileManager.processFrontMatter` → plugin tool (`update_frontmatter`).
 
 This keeps the plugin surface small enough to audit and lets workflow innovation happen without a plugin release.
 
