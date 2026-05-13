@@ -21,7 +21,8 @@ export function makeAuditLogger(app: App, settings: ClaudeMcpSettings): AuditLog
       // Trim large arg values so the log stays readable
       const safeArgs = Object.fromEntries(
         Object.entries(entry.args).map(([k, v]) => {
-          if (typeof v === "string" && v.length > 200) return [k, v.slice(0, 200) + `…(+${v.length - 200} chars)`];
+          if (typeof v === "string" && v.length > 200)
+            return [k, v.slice(0, 200) + `…(+${v.length - 200} chars)`];
           return [k, v];
         }),
       );

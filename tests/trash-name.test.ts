@@ -15,7 +15,9 @@ describe("encodeTrashName", () => {
   });
 
   it("encodes deeply nested paths", () => {
-    expect(encodeTrashName("a/b/c/d.md", fixedDate)).toBe("2026-05-12T13-36-08-670Z__a__b__c__d.md");
+    expect(encodeTrashName("a/b/c/d.md", fixedDate)).toBe(
+      "2026-05-12T13-36-08-670Z__a__b__c__d.md",
+    );
   });
 
   it("replaces colons and dots in timestamp with dashes", () => {

@@ -15,7 +15,10 @@ export class ObsidianMcpServer {
   private http: HttpServer | null = null;
   private transports = new Map<string, StreamableHTTPServerTransport>();
 
-  constructor(private app: App, private settings: ClaudeMcpSettings) {}
+  constructor(
+    private app: App,
+    private settings: ClaudeMcpSettings,
+  ) {}
 
   async start(): Promise<void> {
     if (this.http) return;
@@ -50,11 +53,13 @@ export class ObsidianMcpServer {
       if (e.code === "EADDRINUSE") {
         throw new Error(
           `port ${this.settings.port} is already in use — change it in Claude MCP settings or stop the conflicting process`,
+          { cause: err },
         );
       }
       if (e.code === "EACCES") {
         throw new Error(
           `permission denied binding to ${this.settings.bindHost}:${this.settings.port} (ports < 1024 require elevated permissions)`,
+          { cause: err },
         );
       }
       throw err;

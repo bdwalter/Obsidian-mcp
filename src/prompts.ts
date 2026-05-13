@@ -34,8 +34,14 @@ export function registerPrompts(mcp: McpServer, _ctx: ToolContext): void {
     {
       description: "Pull action items out of a note or a date range of daily notes.",
       argsSchema: {
-        path: z.string().optional().describe("Specific note path, or omit to scan recent daily notes."),
-        days: z.string().optional().describe("If `path` is omitted, look back this many days (default 7)."),
+        path: z
+          .string()
+          .optional()
+          .describe("Specific note path, or omit to scan recent daily notes."),
+        days: z
+          .string()
+          .optional()
+          .describe("If `path` is omitted, look back this many days (default 7)."),
       },
     },
     async ({ path, days }) => {
@@ -68,9 +74,13 @@ Rules:
   mcp.registerPrompt(
     "find-stale-notes",
     {
-      description: "Identify notes that haven't been updated in a while and might be candidates for archival or revival.",
+      description:
+        "Identify notes that haven't been updated in a while and might be candidates for archival or revival.",
       argsSchema: {
-        threshold_days: z.string().optional().describe("Notes older than this many days are stale (default 90)."),
+        threshold_days: z
+          .string()
+          .optional()
+          .describe("Notes older than this many days are stale (default 90)."),
         folder: z.string().optional(),
       },
     },

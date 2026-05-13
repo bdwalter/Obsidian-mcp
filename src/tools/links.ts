@@ -64,9 +64,7 @@ export function registerLinkTools(mcp: McpServer, { app }: ToolContext): void {
         return textResult(JSON.stringify({ error: `not found: ${path}` }));
       }
       const targetCache = app.metadataCache.getFileCache(target);
-      const targetTags = new Set(
-        (targetCache?.tags ?? []).map((t) => t.tag.replace(/^#/, "")),
-      );
+      const targetTags = new Set((targetCache?.tags ?? []).map((t) => t.tag.replace(/^#/, "")));
       const fmTags = ([] as string[]).concat(
         (targetCache?.frontmatter?.tags as string[] | string | undefined) ?? [],
       );
@@ -83,10 +81,13 @@ export function registerLinkTools(mcp: McpServer, { app }: ToolContext): void {
           tags.add(t);
         }
         const shared = [...targetTags].filter((t) => tags.has(t));
-        if (shared.length > 0) scored.push({ path: file.path, score: shared.length, sharedTags: shared });
+        if (shared.length > 0)
+          scored.push({ path: file.path, score: shared.length, sharedTags: shared });
       }
       scored.sort((a, b) => b.score - a.score);
-      return textResult(JSON.stringify({ target: target.path, candidates: scored.slice(0, limit) }, null, 2));
+      return textResult(
+        JSON.stringify({ target: target.path, candidates: scored.slice(0, limit) }, null, 2),
+      );
     },
   );
 }

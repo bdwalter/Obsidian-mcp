@@ -1,6 +1,10 @@
 # Claude MCP for Obsidian
 
-![CI](https://github.com/bdwalter/Obsidian-mcp/actions/workflows/ci.yml/badge.svg)
+[![CI](https://github.com/bdwalter/Obsidian-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/bdwalter/Obsidian-mcp/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/bdwalter/Obsidian-mcp?include_prereleases&sort=semver)](https://github.com/bdwalter/Obsidian-mcp/releases)
+![Obsidian min version](https://img.shields.io/badge/Obsidian-%E2%89%A51.4.0-7c3aed)
+![Status: beta](https://img.shields.io/badge/status-beta-orange)
 
 Obsidian community plugin that exposes your vault as a local [Model Context Protocol](https://modelcontextprotocol.io) server over Streamable HTTP. Drop the config snippet into Claude Code (or any MCP client) and Claude can read, search, and write notes through Obsidian's own API — backlinks, frontmatter, tag index, periodic notes, all of it.
 

@@ -85,7 +85,8 @@ export function registerTemplateTools(mcp: McpServer, { app }: ToolContext): voi
       const sTpl = safeVaultPath(templatePath);
       if (!sTpl.ok) return textResult(JSON.stringify({ error: sTpl.error, path: templatePath }));
       const sTarget = safeVaultPath(targetPath);
-      if (!sTarget.ok) return textResult(JSON.stringify({ error: sTarget.error, path: targetPath }));
+      if (!sTarget.ok)
+        return textResult(JSON.stringify({ error: sTarget.error, path: targetPath }));
       try {
         const tpl = app.vault.getAbstractFileByPath(sTpl.path);
         if (!(tpl instanceof TFile)) {

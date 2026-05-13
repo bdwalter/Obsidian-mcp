@@ -73,7 +73,9 @@ function registerAudited(
 }
 
 export function registerWriteTools(mcp: McpServer, { app, settings, audit }: ToolContext): void {
-  registerAudited(mcp, audit, 
+  registerAudited(
+    mcp,
+    audit,
     "create_note",
     "Create a new note. Fails if the file already exists (use update_note for overwrite).",
     {
@@ -100,7 +102,9 @@ export function registerWriteTools(mcp: McpServer, { app, settings, audit }: Too
     },
   );
 
-  registerAudited(mcp, audit, 
+  registerAudited(
+    mcp,
+    audit,
     "update_note",
     "Overwrite a note's contents. Backs up prior contents into .trash/ if backup-on-overwrite is enabled.",
     {
@@ -128,7 +132,9 @@ export function registerWriteTools(mcp: McpServer, { app, settings, audit }: Too
     },
   );
 
-  registerAudited(mcp, audit, 
+  registerAudited(
+    mcp,
+    audit,
     "prepend_to_note",
     "Prepend text to an existing note (after frontmatter if present). Backs up prior contents to .trash/ if enabled.",
     {
@@ -165,11 +171,15 @@ export function registerWriteTools(mcp: McpServer, { app, settings, audit }: Too
     },
   );
 
-  registerAudited(mcp, audit, 
+  registerAudited(
+    mcp,
+    audit,
     "restore_note",
     "Restore a file from .trash/ back into the vault. If `target` is omitted, the destination is inferred from a backup created by update_note/prepend_to_note/append_to_note (filename pattern `<iso-ts>__<path-with-slashes-as-__>.md`).",
     {
-      trashPath: z.string().describe("Vault-relative path inside .trash/, e.g. '.trash/Cold Coffee.md'."),
+      trashPath: z
+        .string()
+        .describe("Vault-relative path inside .trash/, e.g. '.trash/Cold Coffee.md'."),
       target: z
         .string()
         .optional()
@@ -220,7 +230,9 @@ export function registerWriteTools(mcp: McpServer, { app, settings, audit }: Too
     },
   );
 
-  registerAudited(mcp, audit, 
+  registerAudited(
+    mcp,
+    audit,
     "rename_note",
     "Rename or move a note. Uses Obsidian's fileManager so all incoming wikilinks are auto-updated across the vault. Both `from` and `to` are vault-relative .md paths.",
     {
@@ -247,17 +259,24 @@ export function registerWriteTools(mcp: McpServer, { app, settings, audit }: Too
         await app.fileManager.renameFile(file, cTo.np);
         return textResult(JSON.stringify({ from: cFrom.np, to: cTo.np, renamed: true }));
       } catch (e) {
-        return textResult(JSON.stringify({ error: (e as Error).message, from: cFrom.np, to: cTo.np }));
+        return textResult(
+          JSON.stringify({ error: (e as Error).message, from: cFrom.np, to: cTo.np }),
+        );
       }
     },
   );
 
-  registerAudited(mcp, audit, 
+  registerAudited(
+    mcp,
+    audit,
     "update_frontmatter",
     "Surgically update a note's YAML frontmatter without rewriting the body. Pass `set` to assign keys, `unset` to remove keys, or both. Backs up the prior note contents to .trash/ if backup-on-overwrite is enabled.",
     {
       path: z.string(),
-      set: z.record(z.string(), z.unknown()).optional().describe("Keys to set; values overwrite existing."),
+      set: z
+        .record(z.string(), z.unknown())
+        .optional()
+        .describe("Keys to set; values overwrite existing."),
       unset: z.array(z.string()).optional().describe("Keys to remove."),
     },
     async ({ path, set, unset }) => {
@@ -296,7 +315,9 @@ export function registerWriteTools(mcp: McpServer, { app, settings, audit }: Too
     },
   );
 
-  registerAudited(mcp, audit, 
+  registerAudited(
+    mcp,
+    audit,
     "delete_note",
     "Move a note to Obsidian's .trash/ (recoverable). Use Obsidian itself to permanently delete from trash.",
     {
@@ -319,7 +340,9 @@ export function registerWriteTools(mcp: McpServer, { app, settings, audit }: Too
     },
   );
 
-  registerAudited(mcp, audit, 
+  registerAudited(
+    mcp,
+    audit,
     "append_to_note",
     "Append text to an existing note (creates a leading newline if missing). Use 'heading' to append under a specific heading.",
     {

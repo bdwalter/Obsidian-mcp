@@ -10,8 +10,14 @@ export function registerSearchTools(mcp: McpServer, { app }: ToolContext): void 
     "search_vault",
     "Search the vault. Filters compose: query (body substring), filename (path/basename substring), tag (e.g. #project), frontmatterKey+frontmatterValue. Use offset+limit to page.",
     {
-      query: z.string().optional().describe("Substring match against note body (case-insensitive)."),
-      filename: z.string().optional().describe("Substring match against the file path/name (case-insensitive)."),
+      query: z
+        .string()
+        .optional()
+        .describe("Substring match against note body (case-insensitive)."),
+      filename: z
+        .string()
+        .optional()
+        .describe("Substring match against the file path/name (case-insensitive)."),
       tag: z.string().optional(),
       frontmatterKey: z.string().optional(),
       frontmatterValue: z.string().optional(),
@@ -20,8 +26,11 @@ export function registerSearchTools(mcp: McpServer, { app }: ToolContext): void 
       offset: z.number().int().min(0).default(0),
     },
     async (args) => {
-      const { query, filename, tag, frontmatterKey, frontmatterValue, folder, limit, offset } = args;
-      const files = app.vault.getMarkdownFiles().filter((f) => !folder || f.path.startsWith(folder));
+      const { query, filename, tag, frontmatterKey, frontmatterValue, folder, limit, offset } =
+        args;
+      const files = app.vault
+        .getMarkdownFiles()
+        .filter((f) => !folder || f.path.startsWith(folder));
       const hits: Array<{ path: string; snippet?: string }> = [];
       let skipped = 0;
       let totalMatched = 0;
@@ -84,7 +93,9 @@ export function registerSearchTools(mcp: McpServer, { app }: ToolContext): void 
       folder: z.string().optional(),
     },
     async ({ folder }) => {
-      const files = app.vault.getMarkdownFiles().filter((f) => !folder || f.path.startsWith(folder));
+      const files = app.vault
+        .getMarkdownFiles()
+        .filter((f) => !folder || f.path.startsWith(folder));
       const counts = new Map<string, number>();
       for (const f of files) {
         const fm = app.metadataCache.getFileCache(f)?.frontmatter;
@@ -97,7 +108,9 @@ export function registerSearchTools(mcp: McpServer, { app }: ToolContext): void 
       const items = [...counts.entries()]
         .map(([key, count]) => ({ key, count }))
         .sort((a, b) => b.count - a.count);
-      return textResult(JSON.stringify({ scanned: files.length, count: items.length, items }, null, 2));
+      return textResult(
+        JSON.stringify({ scanned: files.length, count: items.length, items }, null, 2),
+      );
     },
   );
 
@@ -109,9 +122,7 @@ export function registerSearchTools(mcp: McpServer, { app }: ToolContext): void 
       recursive: z.boolean().default(true),
     },
     async ({ folder, recursive }) => {
-      const root = folder
-        ? app.vault.getAbstractFileByPath(folder)
-        : app.vault.getRoot();
+      const root = folder ? app.vault.getAbstractFileByPath(folder) : app.vault.getRoot();
       if (!(root instanceof TFolder)) {
         return textResult(JSON.stringify({ error: `folder not found: ${folder}` }));
       }
@@ -119,7 +130,9 @@ export function registerSearchTools(mcp: McpServer, { app }: ToolContext): void 
       const walk = (f: TFolder) => {
         for (const child of f.children) {
           if (child instanceof TFolder) {
-            const notes = child.children.filter((c) => c instanceof TFile && c.extension === "md").length;
+            const notes = child.children.filter(
+              (c) => c instanceof TFile && c.extension === "md",
+            ).length;
             const subs = child.children.filter((c) => c instanceof TFolder).length;
             out.push({ path: child.path, noteCount: notes, subfolderCount: subs });
             if (recursive) walk(child);
@@ -137,7 +150,10 @@ export function registerSearchTools(mcp: McpServer, { app }: ToolContext): void 
     "List notes with optional folder filter, recursive flag, sort, and pagination.",
     {
       folder: z.string().optional(),
-      recursive: z.boolean().default(true).describe("If false, only return notes directly in `folder` (no subfolders)."),
+      recursive: z
+        .boolean()
+        .default(true)
+        .describe("If false, only return notes directly in `folder` (no subfolders)."),
       sortBy: z.enum(["mtime", "ctime", "path"]).default("mtime"),
       order: z.enum(["asc", "desc"]).default("desc"),
       limit: z.number().int().positive().max(1000).default(100),
@@ -167,7 +183,9 @@ export function registerSearchTools(mcp: McpServer, { app }: ToolContext): void 
         ctime: f.stat.ctime,
         size: f.stat.size,
       }));
-      return textResult(JSON.stringify({ count: items.length, total, offset, limit, items }, null, 2));
+      return textResult(
+        JSON.stringify({ count: items.length, total, offset, limit, items }, null, 2),
+      );
     },
   );
 }

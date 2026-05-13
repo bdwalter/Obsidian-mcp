@@ -27,7 +27,12 @@ export function registerResources(mcp: McpServer, { app }: ToolContext): void {
       mimeType: "text/markdown",
     },
     async (uri, variables) => {
-      const rawPath = typeof variables.path === "string" ? variables.path : Array.isArray(variables.path) ? variables.path[0] : "";
+      const rawPath =
+        typeof variables.path === "string"
+          ? variables.path
+          : Array.isArray(variables.path)
+            ? variables.path[0]
+            : "";
       const path = decodeURIComponent(rawPath);
       const file = app.vault.getAbstractFileByPath(path);
       if (!(file instanceof TFile)) {

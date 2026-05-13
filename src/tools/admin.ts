@@ -13,7 +13,8 @@ export function registerAdminTools(mcp: McpServer, { app, settings }: ToolContex
     "Returns plugin version, vault name, read-only state, and the registered tool count. Use this to probe capabilities before invoking other tools.",
     {},
     async () => {
-      const tools = (mcp as unknown as { _registeredTools?: Record<string, unknown> })._registeredTools;
+      const tools = (mcp as unknown as { _registeredTools?: Record<string, unknown> })
+        ._registeredTools;
       const toolCount = tools ? Object.keys(tools).length : null;
       return textResult(
         JSON.stringify(

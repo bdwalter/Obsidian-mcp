@@ -11,7 +11,11 @@ export function safeVaultPath(input: string): SafePath {
     return { ok: false, path: "", error: "path is empty" };
   }
   if (input.startsWith("/") || input.startsWith("\\")) {
-    return { ok: false, path: input, error: "absolute paths are not allowed (paths are vault-relative)" };
+    return {
+      ok: false,
+      path: input,
+      error: "absolute paths are not allowed (paths are vault-relative)",
+    };
   }
   if (/^[A-Za-z]:[\\/]/.test(input)) {
     return { ok: false, path: input, error: "drive-letter paths are not allowed" };

@@ -82,7 +82,9 @@ export function registerReadTools(mcp: McpServer, { app }: ToolContext): void {
       date: z
         .string()
         .optional()
-        .describe("ISO date, keyword (today|yesterday|tomorrow), or relative offset (e.g. -7d, +2w). Defaults to today."),
+        .describe(
+          "ISO date, keyword (today|yesterday|tomorrow), or relative offset (e.g. -7d, +2w). Defaults to today.",
+        ),
     },
     async ({ date }) => {
       const target = resolveDate(date);
@@ -104,10 +106,7 @@ export function registerReadTools(mcp: McpServer, { app }: ToolContext): void {
     "list_tags",
     "List all tags used across the vault with usage counts. Combines inline #tags and frontmatter tags. Sorted by count descending.",
     {
-      folder: z
-        .string()
-        .optional()
-        .describe("Restrict to notes inside this folder prefix."),
+      folder: z.string().optional().describe("Restrict to notes inside this folder prefix."),
     },
     async ({ folder }) => {
       const files = app.vault
