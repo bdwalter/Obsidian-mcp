@@ -1,0 +1,10 @@
+# Code ownership for github.com/bdwalter/Obsidian-mcp
+#
+# Format: <glob> <github-username>
+# See https://docs.github.com/en/repositories/managing-your-repositories-settings-and-features/customizing-your-repository/about-code-owners
+#
+# The owner listed for a path is auto-requested as a reviewer when a PR
+# touches that path, and is the responsible party for changes there.
+
+# Everything in the repo
+* @bdwalter
