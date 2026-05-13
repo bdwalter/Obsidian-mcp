@@ -4,47 +4,67 @@ All notable changes to this project are documented here. Format roughly follows 
 
 ## [Unreleased]
 
-### Added
+## [0.1.0-beta.1] - 2026-05-13
 
-- **MCP resources**: notes are addressable as `obsidian-note:///<path>` and discoverable via `resources/list` (capped at 500 entries in large vaults — use `search_vault`/`list_notes` for full traversal).
-- **MCP prompts**: `summarize-note`, `extract-action-items`, `find-stale-notes` — server-provided prompt templates for common workflows.
-- **`/health` HTTP endpoint** at `GET /<bindHost>:<port>/health` returning `{ status, plugin, readOnly, sessions }`. No auth required (read-only metadata).
-- **`rename_note`** tool — uses Obsidian's `fileManager.renameFile` so all incoming wikilinks are auto-rewritten.
-- **`update_frontmatter`** tool — surgical YAML edits via `app.fileManager.processFrontMatter`, with `set` and `unset` operations. Backs up to `.trash/` before writing.
-- **`list_tags`** tool — distinct from `get_metadata_keys`; returns all tags (inline + frontmatter) with usage counts, sorted descending.
-- **`get_note_outline`** tool — returns heading hierarchy from metadata cache.
-- **`open_note_in_obsidian`** tool — focuses a note in the active Obsidian window via `workspace.openLinkText`.
-- **`list_templates`, `get_template`, `apply_template`** tools — integration with the core Templates plugin. Expands `{{date}}`, `{{time}}`, `{{title}}` placeholders. Templater (community plugin) syntax is not expanded.
-- **`get_server_info`** tool — returns plugin version, vault name, read-only state, tool count, and active settings flags.
-- **Write allow-list** setting (`writeAllowFolders`) — comma-separated folder prefixes that scope write tools. Empty list (default) allows writes anywhere; non-empty restricts.
-- **Audit log** setting — when enabled, every write-tool call is appended to a vault note (default `.claude-mcp-audit.md`) with timestamp, tool name, args, and result. Defaults off.
+First public pre-release. Available via BRAT and as a tagged GitHub release with `main.js`, `manifest.json`, and `versions.json` attached.
 
-### Changed
+### Tools
 
-- Plugin version surfaced in `get_server_info` and the `[claude-mcp]` startup log line is now read at build time from `manifest.json` via an esbuild `define`.
+- 9 read/search/link tools: `search_vault`, `list_notes`, `list_folders`, `get_metadata_keys`, `read_note`, `get_daily_note`, `list_backlinks`, `get_unresolved_links`, `find_similar_notes`.
+- 3 discovery tools: `list_tags` (distinct from `get_metadata_keys` — actual tags with counts), `get_note_outline` (heading hierarchy from metadata cache).
+- 8 write tools: `create_note`, `update_note`, `append_to_note` (optionally under a heading), `prepend_to_note`, `delete_note`, `restore_note`, `rename_note` (auto-rewrites incoming wikilinks via `fileManager.renameFile`), `update_frontmatter` (surgical YAML edits via `processFrontMatter`).
+- 3 template tools: `list_templates`, `get_template`, `apply_template` — core Templates plugin integration. Expands `{{date}}`/`{{time}}`/`{{title}}` placeholders. Templater (community plugin) syntax is left as-is.
+- 2 admin tools: `get_server_info` (plugin version, vault name, settings state, tool count), `open_note_in_obsidian`.
 
-### Tests
+### MCP protocol surface
 
-- Added unit tests for `isWriteAllowed` and `expandTemplate`. Test count: 48 → 61.
+- **Resources**: notes addressable as `obsidian-note:///<path>`; `resources/list` returns up to 500 markdown files.
+- **Prompts**: `summarize-note`, `extract-action-items`, `find-stale-notes` — server-provided prompt templates that drive common synthesis workflows.
 
-## [0.1.0] - 2026-05-12
+### HTTP endpoints
 
-Initial submission-ready release.
+- `POST /mcp` — MCP Streamable HTTP transport. Bearer token required; constant-time comparison via `crypto.timingSafeEqual`. Origin header validated (DNS-rebinding defense). Body capped at 16 MB.
+- `GET /health` — No-auth liveness probe returning `{ status, plugin, readOnly, sessions }`.
 
-### Added
+### Safety
 
-- 14 vault tools across read/search/link/write categories (see README for the full table).
-- Streamable HTTP MCP server on `127.0.0.1:27125` with bearer-token auth.
-- Origin header validation (DNS-rebinding defense).
-- Constant-time bearer comparison (`crypto.timingSafeEqual`).
-- 16 MB request body size cap (HTTP 413).
-- Path safety (`safeVaultPath`): rejects absolute paths, drive letters, `..` segments, null bytes.
-- Per-overwrite backup to `.trash/<iso-ts>__<encoded-path>` for `update_note` / `append_to_note` / `prepend_to_note`.
-- `restore_note` tool — brings files back from `.trash/`, infers destination from timestamped backups.
-- Read-only mode setting — when enabled, write tools are not registered with the MCP server at all (truthful capability surface).
-- Auto-restart on port / bind-host changes (debounced ~1.5s).
+- Loopback binding by default (`127.0.0.1`).
+- `safeVaultPath` rejects absolute paths, Windows drive letters, `..` segments, and null bytes structurally across all write tools.
+- Backup-on-overwrite: every `update_note` / `append_to_note` / `prepend_to_note` / `update_frontmatter` copies prior contents to `.trash/<iso-ts>__<encoded-path>.md` before writing; `restore_note` reverses it.
+- Read-only mode setting: when enabled, write tools are not registered with the MCP server at all (truthful capability surface, not runtime rejection).
+- Write allow-list setting (`writeAllowFolders`): comma-separated folder prefixes that scope write tools. Empty list (default) allows writes anywhere.
+- Audit log setting: every write-tool call is appended to a vault note (default `.claude-mcp-audit.md`) with timestamp, tool name, args, and result.
+- Read tools refuse non-`.md` files (no streaming binary attachments as text).
+
+### Settings UX
+
+- Auto-restart on port / bind-host / read-only changes (debounced ~1.5s).
+- Bearer token rotation takes effect immediately (no restart required).
+- Settings tab includes a ready-to-paste `~/.claude.json` snippet with one-click copy.
+- Open-source notice + repo link in the settings tab footer.
+
+### Build & release infrastructure
+
 - `versions.json` for Obsidian release compatibility mapping.
-- GitHub Actions CI: typecheck + Vitest + bundle build.
-- 48 unit tests across path safety, date resolution, frontmatter stripping, trash-name encoding.
-- `scripts/release-qa.sh` — end-to-end probes for live server before tagging.
-- `scripts/lifecycle-check.sh` — interactive port-release validator.
+- esbuild `define` injects `PLUGIN_VERSION` at build time from `manifest.json`.
+- GitHub Actions CI: format check (Prettier) + lint (ESLint TypeScript) + typecheck + Vitest + bundle build, on push and PR.
+- GitHub Actions release workflow: on semver tag push, validates `manifest.json.version === tag` and that `versions.json` includes the version, then creates a GitHub Release with `main.js`, `manifest.json`, `versions.json` attached.
+- Dependabot config for npm (weekly, grouped minor/patch) and GitHub Actions (monthly).
+- 61 unit tests across path safety, date resolution, frontmatter stripping, trash-name encoding, write allow-list, and template expansion.
+- `scripts/release-qa.sh` — 23 end-to-end checks against a live plugin.
+- `scripts/lifecycle-check.sh` — interactive port-release validator across N toggle cycles.
+- `scripts/smoke.sh` — fast handshake + tools/list probe.
+
+### Documentation
+
+- README, CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, SUPPORT, CODEOWNERS.
+- `docs/install.md` — pre-marketplace install guide (BRAT, manual, from-source) plus first-run setup, updating, uninstalling, troubleshooting.
+- `docs/architecture.md` — process model, request lifecycle, design rationale.
+- `CLAUDE.md` — repo-specific guidance for AI coding assistants.
+- Issue templates (bug, feature) and PR template.
+
+### Tooling
+
+- Prettier + ESLint (flat config) with TypeScript support.
+- `.editorconfig` and `.nvmrc` (Node 20) for editor/runtime consistency.
+- TypeScript 6 with target `ES2022`.
