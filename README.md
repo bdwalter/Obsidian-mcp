@@ -12,6 +12,8 @@ Obsidian community plugin that exposes your vault as a local [Model Context Prot
 
 Early — v0.1.0-beta.1. All tools are functional; community-plugin marketplace submission is pending. Recommended for early users via BRAT.
 
+> **macOS only for now.** Developed and exercised exclusively on macOS. The code uses path helpers and APIs that should work cross-platform (`normalizePath`, `safeVaultPath` handles Windows separators, etc.), but **Windows and Linux are untested.** If you run it on one of those and it works — please open an issue saying so. If it doesn't — definitely open an issue.
+
 > **Beta software — use at your own risk.** This plugin is in active development and may change without notice. The MIT license disclaims all warranties (express or implied) — the author takes no responsibility for data loss, vault corruption, or any other damage that results from use. The `restore_note` tool and `.trash/` backups exist for a reason; back up your vault independently if it contains anything you can't afford to lose.
 
 ## Tools
