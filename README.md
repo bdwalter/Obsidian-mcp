@@ -12,7 +12,7 @@ Paired skills live at [Obsidian-skills](https://github.com/bdwalter/Obsidian-ski
 
 ## Status
 
-Early — v0.1.0. All tools are functional; community-plugin marketplace submission is pending. Recommended for early users via BRAT.
+Early — v0.1.0-beta.1. All tools are functional; community-plugin marketplace submission is pending. Recommended for early users via BRAT.
 
 > **Beta software — use at your own risk.** This plugin is in active development and may change without notice. The MIT license disclaims all warranties (express or implied) — the author takes no responsibility for data loss, vault corruption, or any other damage that results from use. The `restore_note` tool and `.trash/` backups exist for a reason; back up your vault independently if it contains anything you can't afford to lose.
 
