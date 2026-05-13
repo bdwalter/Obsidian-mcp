@@ -76,13 +76,13 @@ In addition to tools, the server exposes:
 
 ## Install
 
-> Not yet on the Obsidian community-plugin marketplace. Until then, install via one of the routes in [`docs/install.md`](docs/install.md):
+> **Pre-marketplace** (today), and **post-marketplace for beta-testers / developers** who want pre-release builds, install via one of the routes in [`docs/install.md`](docs/install.md):
 >
-> 1. **[BRAT](docs/install.md#1-brat-recommended-for-most-users)** — easiest if you're not a developer; auto-updates.
+> 1. **[BRAT](docs/install.md#1-brat-recommended-for-most-users)** — Beta Reviewers Auto-update Tester. Easiest if you're not a developer; auto-updates from GitHub.
 > 2. **[Manual release download](docs/install.md#2-manual-release-download)** — drop `main.js`, `manifest.json`, `versions.json` into `<vault>/.obsidian/plugins/obsidian-claude-mcp/`.
 > 3. **[From source](docs/install.md#3-from-source-dev-install)** — clone, `npm install && npm run build`, symlink. For contributors.
 >
-> See [`docs/install.md`](docs/install.md) for first-run setup (token generation, Claude Code wiring), updating, uninstalling, and troubleshooting.
+> Once the plugin is on the community-plugin marketplace, regular users will install via Settings → Community plugins → Browse — no GitHub steps. See [`docs/install.md`](docs/install.md) for first-run setup (token generation, Claude Code wiring), updating, uninstalling, and troubleshooting.
 
 > After rebuilding the plugin (or after BRAT updates it), **disable and re-enable it in Settings → Community plugins** so Obsidian picks up the new `main.js`. The plugin code is held in memory until reload.
 

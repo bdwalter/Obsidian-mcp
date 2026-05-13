@@ -1,10 +1,14 @@
 # Installing Claude MCP for Obsidian
 
-> **This guide will be obsolete once the plugin is accepted into the Obsidian Community Plugins marketplace.** At that point, install will be: open Obsidian → Settings → Community plugins → Browse → search "Claude MCP" → Install → Enable. No GitHub steps, no manual downloads. Until then, use one of the routes below.
+> **When this guide is needed:**
+>
+> - **Today**, while the plugin is pre-marketplace — any of the three routes below.
+> - **Post-marketplace (for typical users):** install will be `Settings → Community plugins → Browse → search "Claude MCP" → Install → Enable`. This guide isn't needed.
+> - **Post-marketplace (for beta-testers and developers):** **BRAT** and **from-source** routes remain the way to run pre-release versions of the plugin before they hit the marketplace. This guide stays relevant for that audience.
 
 There are three ways to install, in order of recommendation:
 
-1. **[BRAT](#1-brat-recommended-for-most-users)** — easiest if you're not a developer. BRAT (Beta Reviewers Auto-update Tool) is a community plugin designed to install other plugins from GitHub. Handles updates automatically.
+1. **[BRAT](#1-brat-recommended-for-most-users)** — easiest if you're not a developer. BRAT (**B**eta **R**eviewers **A**uto-update **T**ester) is a community plugin designed to install other plugins directly from GitHub, including beta releases. Handles updates automatically.
 2. **[Manual release download](#2-manual-release-download)** — no extra plugins. Download release artifacts, drop them in the vault, enable.
 3. **[From source (dev install)](#3-from-source-dev-install)** — clone, build, symlink. For contributors or anyone modifying the plugin.
 
@@ -176,7 +180,7 @@ Disable and re-enable the plugin in Settings → Community plugins. The bundle i
 The repo's latest release tag and the `manifest.json` version must match. If you're a contributor and just tagged a release, wait a minute or two for GitHub to publish it.
 
 **Plugin doesn't appear in the Browse list.**
-Until the marketplace submission is accepted, the plugin is **not** in the Browse list. Use BRAT or manual install (above). This guide will be deleted when the marketplace listing goes live.
+Until the marketplace submission is accepted, the plugin is **not** in the Browse list — use BRAT or manual install. If the plugin is already on the marketplace but you want a pre-release / beta build that hasn't shipped to it yet, BRAT is still the right path for that case.
 
 ---
 
