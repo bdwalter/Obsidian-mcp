@@ -58,7 +58,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          PRERELEASE_FLAG=""
+          case "${GITHUB_REF_NAME}" in
+            *-*) PRERELEASE_FLAG="--prerelease" ;;
+          esac
           gh release create "${GITHUB_REF_NAME}" \
             --title "${GITHUB_REF_NAME}" \
             --notes "See [CHANGELOG.md](https://github.com/${GITHUB_REPOSITORY}/blob/main/CHANGELOG.md) for what changed." \
+            $PRERELEASE_FLAG \
             main.js manifest.json versions.json
