@@ -257,7 +257,7 @@ export function registerWriteTools(mcp: McpServer, { app, settings, audit }: Too
     "Surgically update a note's YAML frontmatter without rewriting the body. Pass `set` to assign keys, `unset` to remove keys, or both. Backs up the prior note contents to .trash/ if backup-on-overwrite is enabled.",
     {
       path: z.string(),
-      set: z.record(z.unknown()).optional().describe("Keys to set; values overwrite existing."),
+      set: z.record(z.string(), z.unknown()).optional().describe("Keys to set; values overwrite existing."),
       unset: z.array(z.string()).optional().describe("Keys to remove."),
     },
     async ({ path, set, unset }) => {
