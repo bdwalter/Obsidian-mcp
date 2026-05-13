@@ -74,27 +74,17 @@ In addition to tools, the server exposes:
 - **Resources** (`obsidian-note:///<path>`) — notes are addressable as MCP resources; `resources/list` returns the first 500 markdown files. Clients that prefer resource-browsing over tool calls can use this.
 - **Prompts** — `summarize-note`, `extract-action-items`, `find-stale-notes`. Server-provided prompt templates that drive common synthesis workflows; the model calls tools to gather material.
 
-## Install (dev)
+## Install
 
-```bash
-cd ~/GitHub/Obsidian-mcp
-npm install
-npm run build
-```
+> Not yet on the Obsidian community-plugin marketplace. Until then, install via one of the routes in [`docs/install.md`](docs/install.md):
+>
+> 1. **[BRAT](docs/install.md#1-brat-recommended-for-most-users)** — easiest if you're not a developer; auto-updates.
+> 2. **[Manual release download](docs/install.md#2-manual-release-download)** — drop `main.js`, `manifest.json`, `versions.json` into `<vault>/.obsidian/plugins/obsidian-claude-mcp/`.
+> 3. **[From source](docs/install.md#3-from-source-dev-install)** — clone, `npm install && npm run build`, symlink. For contributors.
+>
+> See [`docs/install.md`](docs/install.md) for first-run setup (token generation, Claude Code wiring), updating, uninstalling, and troubleshooting.
 
-Symlink the build output into your vault (set `VAULT` to the absolute path of your vault first):
-
-```bash
-export VAULT="/path/to/your/vault"
-PLUG="$VAULT/.obsidian/plugins/obsidian-claude-mcp"
-mkdir -p "$PLUG"
-ln -sf "$PWD/main.js"       "$PLUG/main.js"
-ln -sf "$PWD/manifest.json" "$PLUG/manifest.json"
-```
-
-Reload Obsidian, enable the plugin in Settings → Community plugins, then open the plugin's settings tab. A bearer token is generated on first load. Copy it from settings.
-
-> After rebuilding the plugin, **disable and re-enable it in Settings → Community plugins** so Obsidian picks up the new `main.js`. Symlinking the bundle is not enough — the plugin code is held in memory until reload.
+> After rebuilding the plugin (or after BRAT updates it), **disable and re-enable it in Settings → Community plugins** so Obsidian picks up the new `main.js`. The plugin code is held in memory until reload.
 
 ## Wire Claude Code
 
