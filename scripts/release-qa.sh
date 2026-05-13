@@ -20,7 +20,7 @@ set -uo pipefail
 VAULT="${VAULT:-}"
 PORT="${PORT:-27125}"
 HOST="${HOST:-127.0.0.1}"
-EXPECTED_TOOL_COUNT="${EXPECTED_TOOL_COUNT:-15}"
+EXPECTED_TOOL_COUNT="${EXPECTED_TOOL_COUNT:-24}"
 
 if [[ -z "$VAULT" ]]; then
   REG="$HOME/Library/Application Support/obsidian/obsidian.json"
@@ -183,6 +183,99 @@ echo "$RESULT" | grep -q '"restored"' && ok "restore_note (inferred target from 
 
 PAYLOAD=$(python3 -c "import json; print(json.dumps({'jsonrpc':'2.0','id':15,'method':'tools/call','params':{'name':'delete_note','arguments':{'path':'$TEST_PATH'}}}))")
 call_raw "" "$PAYLOAD" > /dev/null
+
+# ── 8. /health endpoint (no auth) ─────────────────────────────────────────
+echo "8. /health endpoint"
+HEALTH=$(curl -sS http://"$HOST":"$PORT"/health)
+echo "$HEALTH" | python3 -c "
+import json, sys
+d = json.loads(sys.stdin.read())
+ok = d.get('status') == 'ok' and d.get('plugin') == 'obsidian-claude-mcp' and 'readOnly' in d and 'sessions' in d
+sys.exit(0 if ok else 1)
+" && ok "/health returns expected shape" || bad "/health shape unexpected: $HEALTH"
+
+# ── 9. get_server_info shape ──────────────────────────────────────────────
+echo "9. get_server_info"
+PAYLOAD='{"jsonrpc":"2.0","id":30,"method":"tools/call","params":{"name":"get_server_info","arguments":{}}}'
+INFO=$(call_raw "" "$PAYLOAD" | extract | python3 -c "import json,sys; r=json.load(sys.stdin); print(r['result']['content'][0]['text'])")
+echo "$INFO" | python3 -c "
+import json, sys
+d = json.loads(sys.stdin.read())
+required = ['plugin', 'version', 'vault', 'readOnly', 'trashOnWrite', 'auditLog', 'toolCount']
+missing = [k for k in required if k not in d]
+sys.exit(0 if not missing else 1)
+" && ok "get_server_info returns expected fields" || bad "get_server_info missing keys: $INFO"
+
+# ── 10. rename_note roundtrip ─────────────────────────────────────────────
+echo "10. rename_note"
+RENAME_FROM="qa-test/rename-src-$(date +%s).md"
+RENAME_TO="qa-test/rename-dst-$(date +%s).md"
+PAYLOAD=$(python3 -c "import json; print(json.dumps({'jsonrpc':'2.0','id':40,'method':'tools/call','params':{'name':'create_note','arguments':{'path':'$RENAME_FROM','content':'rename-test'}}}))")
+call_raw "" "$PAYLOAD" > /dev/null
+PAYLOAD=$(python3 -c "import json; print(json.dumps({'jsonrpc':'2.0','id':41,'method':'tools/call','params':{'name':'rename_note','arguments':{'from':'$RENAME_FROM','to':'$RENAME_TO'}}}))")
+RESULT=$(call_raw "" "$PAYLOAD" | extract | python3 -c "import json,sys; r=json.load(sys.stdin); print(r['result']['content'][0]['text'])")
+echo "$RESULT" | grep -q '"renamed":true' && ok "rename_note succeeded" || bad "rename_note: $RESULT"
+PAYLOAD=$(python3 -c "import json; print(json.dumps({'jsonrpc':'2.0','id':42,'method':'tools/call','params':{'name':'read_note','arguments':{'path':'$RENAME_TO'}}}))")
+RESULT=$(call_raw "" "$PAYLOAD" | extract | python3 -c "import json,sys; r=json.load(sys.stdin); print(r['result']['content'][0]['text'])")
+echo "$RESULT" | grep -q "rename-test" && ok "renamed note readable at new path" || bad "renamed note not at new path: $RESULT"
+CLEANUP=$(python3 -c "import json; print(json.dumps({'jsonrpc':'2.0','id':43,'method':'tools/call','params':{'name':'delete_note','arguments':{'path':'$RENAME_TO'}}}))")
+call_raw "" "$CLEANUP" > /dev/null
+
+# ── 11. update_frontmatter ────────────────────────────────────────────────
+echo "11. update_frontmatter"
+FM_PATH="qa-test/fm-$(date +%s).md"
+PAYLOAD=$(python3 -c "import json; print(json.dumps({'jsonrpc':'2.0','id':50,'method':'tools/call','params':{'name':'create_note','arguments':{'path':'$FM_PATH','content':'---\ntags: [initial]\n---\nbody'}}}))")
+call_raw "" "$PAYLOAD" > /dev/null
+PAYLOAD=$(python3 -c "import json; print(json.dumps({'jsonrpc':'2.0','id':51,'method':'tools/call','params':{'name':'update_frontmatter','arguments':{'path':'$FM_PATH','set':{'status':'done','priority':3}}}}))")
+RESULT=$(call_raw "" "$PAYLOAD" | extract | python3 -c "import json,sys; r=json.load(sys.stdin); print(r['result']['content'][0]['text'])")
+echo "$RESULT" | grep -q '"updated":true' && ok "update_frontmatter set keys" || bad "update_frontmatter: $RESULT"
+PAYLOAD=$(python3 -c "import json; print(json.dumps({'jsonrpc':'2.0','id':52,'method':'tools/call','params':{'name':'read_note','arguments':{'path':'$FM_PATH'}}}))")
+RESULT=$(call_raw "" "$PAYLOAD" | extract | python3 -c "import json,sys; r=json.load(sys.stdin); print(r['result']['content'][0]['text'])")
+echo "$RESULT" | python3 -c "
+import json, sys
+d = json.loads(sys.stdin.read())
+fm = d.get('frontmatter') or {}
+sys.exit(0 if fm.get('status') == 'done' and fm.get('priority') == 3 and 'initial' in (fm.get('tags') or []) else 1)
+" && ok "frontmatter set persisted and prior keys preserved" || bad "frontmatter content wrong: $RESULT"
+CLEANUP=$(python3 -c "import json; print(json.dumps({'jsonrpc':'2.0','id':53,'method':'tools/call','params':{'name':'delete_note','arguments':{'path':'$FM_PATH'}}}))")
+call_raw "" "$CLEANUP" > /dev/null
+
+# ── 12. list_tags returns sensible shape ──────────────────────────────────
+echo "12. list_tags"
+PAYLOAD='{"jsonrpc":"2.0","id":60,"method":"tools/call","params":{"name":"list_tags","arguments":{}}}'
+RESULT=$(call_raw "" "$PAYLOAD" | extract | python3 -c "import json,sys; r=json.load(sys.stdin); print(r['result']['content'][0]['text'])")
+echo "$RESULT" | python3 -c "
+import json, sys
+d = json.loads(sys.stdin.read())
+ok = 'count' in d and 'items' in d and 'scanned' in d
+ok = ok and (len(d['items']) == 0 or ('tag' in d['items'][0] and 'count' in d['items'][0]))
+sys.exit(0 if ok else 1)
+" && ok "list_tags returns count/items/scanned shape" || bad "list_tags shape: $RESULT"
+
+# ── 13. MCP resources/list ────────────────────────────────────────────────
+echo "13. resources/list"
+PAYLOAD='{"jsonrpc":"2.0","id":70,"method":"resources/list","params":{}}'
+RESULT=$(call_raw "" "$PAYLOAD" | extract)
+echo "$RESULT" | python3 -c "
+import json, sys
+r = json.load(sys.stdin)
+res = r.get('result', {}).get('resources', [])
+ok = len(res) >= 1 and all(x['uri'].startswith('obsidian-note:///') for x in res[:5])
+sys.exit(0 if ok else 1)
+" && ok "resources/list returns notes as obsidian-note:/// URIs" || bad "resources/list malformed: $RESULT"
+
+# ── 14. MCP prompts/list ──────────────────────────────────────────────────
+echo "14. prompts/list"
+PAYLOAD='{"jsonrpc":"2.0","id":80,"method":"prompts/list","params":{}}'
+RESULT=$(call_raw "" "$PAYLOAD" | extract)
+echo "$RESULT" | python3 -c "
+import json, sys
+r = json.load(sys.stdin)
+prompts = r.get('result', {}).get('prompts', [])
+names = [p['name'] for p in prompts]
+expected = {'summarize-note', 'extract-action-items', 'find-stale-notes'}
+sys.exit(0 if expected.issubset(set(names)) else 1)
+" && ok "prompts/list contains all 3 expected prompts" || bad "prompts/list missing prompts: $RESULT"
 
 # ── Summary ───────────────────────────────────────────────────────────────
 echo
