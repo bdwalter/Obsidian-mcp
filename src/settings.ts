@@ -215,5 +215,21 @@ export class ClaudeMcpSettingTab extends PluginSettingTab {
             new Notice("MCP config copied to clipboard");
           }),
       );
+
+    const about = containerEl.createEl("div", {
+      attr: {
+        style: "margin-top: 24px; padding-top: 12px; border-top: 1px solid var(--background-modifier-border); font-size: 12px; color: var(--text-muted);",
+      },
+    });
+    about.createSpan({ text: "Claude MCP is open-source software (MIT). Source, issues, and contributions: " });
+    about.createEl("a", {
+      text: "github.com/bdwalter/Obsidian-mcp",
+      href: "https://github.com/bdwalter/Obsidian-mcp",
+      attr: { target: "_blank", rel: "noopener" },
+    });
+    about.createEl("br");
+    about.createSpan({
+      text: "Beta software — no warranty. Use at your own risk; back up vaults you can't afford to lose.",
+    });
   }
 }
