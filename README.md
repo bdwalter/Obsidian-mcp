@@ -137,6 +137,18 @@ curl http://127.0.0.1:27125/health
 # → {"status":"ok","plugin":"obsidian-claude-mcp","readOnly":false,"sessions":2}
 ```
 
+## Relationship to Local REST API
+
+[Obsidian Local REST API](https://github.com/coddingtonbear/obsidian-local-rest-api) is a separate community plugin that also exposes the vault over HTTP — but with a REST shape, no MCP, and HTTPS with a self-signed cert. **This plugin does not depend on it.** Claude MCP uses Obsidian's native vault and metadata APIs directly (since it runs inside Obsidian's renderer process), and speaks MCP over plain HTTP on the loopback interface.
+
+The two can coexist on different ports without interfering. Pick based on what your client speaks:
+
+| If you want… | Use |
+| --- | --- |
+| MCP tools/resources/prompts (Claude Code, Claude Desktop, Cursor, mcp-inspector, …) | This plugin |
+| Plain REST endpoints (curl scripts, language-agnostic clients, Shortcuts.app on macOS, …) | [Local REST API](https://github.com/coddingtonbear/obsidian-local-rest-api) |
+| Both | Install both — they're independent |
+
 ## Security model
 
 The plugin is intended for single-user, local-only access. Everything assumes you trust the bearer token, the loopback interface, and the machine. Defenses in place:
