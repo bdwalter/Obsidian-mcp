@@ -13,7 +13,7 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "@types/node": "^20.11.0",
+    "@types/node": "^25.7.0",
     "builtin-modules": "^3.3.0",
     "esbuild": "^0.28.0",
     "obsidian": "latest",
