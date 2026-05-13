@@ -1,0 +1,38 @@
+name: Feature request
+description: Suggest a new tool, setting, or capability.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing, check if the workflow can be composed from existing tools — the plugin aims to stay thin and let skills handle higher-level orchestration.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the workflow or pain point, not the implementation. "I want a tool that does X" usually maps better to "When I'm doing Y, the current tools force me to Z."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: New tool name and signature, new setting, new behavior, etc. Pseudo-schema is fine.
+      render: typescript
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+      description: Why not compose existing tools? Why not handle this in a skill?
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Where does this belong?
+      description: |
+        Is this a **plugin tool** (mutating vault, accessing Obsidian API), or a **skill** (composing existing tools for a workflow)? When in doubt, prefer skills.

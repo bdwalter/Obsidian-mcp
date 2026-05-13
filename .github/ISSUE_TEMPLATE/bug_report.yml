@@ -1,0 +1,88 @@
+name: Bug report
+description: Something broke or behaved unexpectedly.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. The more concrete the repro, the faster it gets fixed.
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      description: Open Settings → Claude MCP and check the footer, or call `get_server_info`.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: obsidian-version
+    attributes:
+      label: Obsidian version
+      description: Obsidian → About → version, or `Cmd+P` → "Show debug info".
+      placeholder: "1.12.7"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - macOS
+        - Windows
+        - Linux
+        - Other (specify below)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: client
+    attributes:
+      label: MCP client
+      description: Which client was talking to the plugin?
+      options:
+        - Claude Code
+        - Claude Desktop
+        - mcp-inspector
+        - Cursor / Cline / Continue
+        - Custom (specify below)
+        - Direct curl / scripts/release-qa.sh
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you observed. Include the JSON-RPC request and response if you have them.
+      placeholder: |
+        Called `update_note` and got back…
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: |
+        Step-by-step to reproduce. If possible, include the smallest tool call (curl + JSON-RPC) or skill that triggers it.
+      render: bash
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / console output
+      description: From Obsidian's developer console (Cmd+Option+I on macOS, Ctrl+Shift+I elsewhere). `[claude-mcp]` lines are most useful.
+      render: text

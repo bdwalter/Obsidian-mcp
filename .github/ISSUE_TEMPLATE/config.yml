@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or discussion
+    url: https://github.com/bdwalter/Obsidian-mcp/discussions
+    about: For usage questions, ideas, and general discussion. Issues are for confirmed bugs and concrete feature requests.
+  - name: Security vulnerability
+    url: https://github.com/bdwalter/Obsidian-mcp/security/advisories/new
+    about: Report a security issue privately via GitHub's vulnerability reporting. Do NOT open a public issue for security concerns.
