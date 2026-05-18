@@ -18,10 +18,10 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/node": "^25.7.0",
+    "@types/node": "^25.8.0",
     "builtin-modules": "^5.2.0",
     "esbuild": "^0.28.0",
-    "eslint": "^10.3.0",
+    "eslint": "^10.4.0",
     "eslint-config-prettier": "^10.1.8",
     "obsidian": "latest",
     "prettier": "^3.8.3",
