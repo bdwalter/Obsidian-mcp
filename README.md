@@ -10,7 +10,7 @@ Obsidian community plugin that exposes your vault as a local [Model Context Prot
 
 ## Status
 
-Early — v0.1.0-beta.1. All tools are functional; community-plugin marketplace submission is pending. Recommended for early users via BRAT.
+Early — v0.1.0-beta.2. All tools are functional; community-plugin marketplace submission is pending. Recommended for early users via BRAT.
 
 > **macOS only for now.** Developed and exercised exclusively on macOS. The code uses path helpers and APIs that should work cross-platform (`normalizePath`, `safeVaultPath` handles Windows separators, etc.), but **Windows and Linux are untested.** If you run it on one of those and it works — please open an issue saying so. If it doesn't — definitely open an issue.
 

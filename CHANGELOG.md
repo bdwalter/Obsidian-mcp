@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Format roughly follows 
 
 ## [Unreleased]
 
+## [0.1.0-beta.2] - 2026-05-21
+
+### Changed
+
+- Bump dev-dependencies: `@types/node` 25.7.0 → 25.8.0, `eslint` 10.3.0 → 10.4.0 ([#8](https://github.com/bdwalter/Obsidian-mcp/pull/8)).
+
 ## [0.1.0-beta.1] - 2026-05-13
 
 First public pre-release. Available via BRAT and as a tagged GitHub release with `main.js`, `manifest.json`, and `versions.json` attached.
